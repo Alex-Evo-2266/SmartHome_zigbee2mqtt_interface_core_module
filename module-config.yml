@@ -1,0 +1,4 @@
+name: zigbee2mqtt_core_module
+name_module: zigbee2mqtt_core_module
+multiply: false
+type: core
