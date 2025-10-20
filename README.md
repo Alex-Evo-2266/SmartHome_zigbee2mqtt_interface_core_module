@@ -1,0 +1,1 @@
+# SmartHome_zigbee2mqtt_interface_core_module
