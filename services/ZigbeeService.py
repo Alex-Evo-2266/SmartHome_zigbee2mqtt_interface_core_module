@@ -268,7 +268,8 @@ class ZigbeeServiceCoordinator():
         if type_exposes == "light":
             return [x for item in data["features"] for x in self.exposes_pars2(item)]
 
-
+    def reloadDevice(self):
+        print("p7777")
 
     def on_load_data(self, data):
         if isinstance(data, dict):
@@ -278,6 +279,9 @@ class ZigbeeServiceCoordinator():
                 return
             if type_command == "link":
                 self.set_permit_join(value_command)
+            elif type_command == "reloadDevice":
+                self.reloadDevice()
+
 
 class ZigbeeService(BaseService):
     cordinators:Dict[str, ZigbeeServiceCoordinator] = {}
@@ -302,9 +306,7 @@ class ZigbeeService(BaseService):
 
     @classmethod
     def on_load_data(cls, data):
-        print("t8888", data)
         if isinstance(data, dict):
-            print("t8888", data)
             for key in data:
                 cordinator = cls.cordinators.get(key, None)
                 if not cordinator is None:
