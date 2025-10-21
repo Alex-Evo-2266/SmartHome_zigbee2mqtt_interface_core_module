@@ -302,6 +302,7 @@ class ZigbeeService(BaseService):
 
     @classmethod
     def on_load_data(cls, data):
+        print("t8888", data)
         if isinstance(data, dict):
             print("t8888", data)
             for key in data:
