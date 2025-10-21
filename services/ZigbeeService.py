@@ -299,6 +299,11 @@ class ZigbeeService(BaseService):
             cls.cordinators[key].stop()
 
     @classmethod
+    async def restart(cls):
+        await cls.stop()
+        await cls.start()
+
+    @classmethod
     async def set_permit_join(cls, root_topic:str, state:bool):
         cordinator = cls.cordinators.get(root_topic, None)
         if cordinator:
