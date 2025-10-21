@@ -303,6 +303,7 @@ class ZigbeeService(BaseService):
     @classmethod
     def on_load_data(cls, data):
         if isinstance(data, dict):
+            print("t8888", data)
             for key in data:
                 cordinator = cls.cordinators.get(key, None)
                 if not cordinator is None:
