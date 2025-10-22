@@ -345,7 +345,7 @@ class ZigbeeService(BaseService):
         print("p6")
         if(not topicks_str):
             raise Exception("error read config")
-        topicks = topicks_str.split(SEPARATOR_KEY)
+        topicks = topicks_str.value.split(SEPARATOR_KEY)
         print("p7", topicks)
         for topik in topicks:
             cls.cordinators[topik] = ZigbeeServiceCoordinator(topik)
