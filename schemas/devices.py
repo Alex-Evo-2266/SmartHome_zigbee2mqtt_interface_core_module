@@ -84,6 +84,7 @@ class ZigbeeDevice(BaseModel):
     interview_completed: Optional[bool] = None
     software_build_id: Optional[str] = None
     date_code: Optional[str] = None
-
-    class Config:
-        extra = "ignore"
+    model_config = {
+        "extra": "ignore",
+        "protected_namespaces": (),
+    }
