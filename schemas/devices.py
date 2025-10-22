@@ -10,8 +10,8 @@ class ZigbeeExposeFeature(BaseModel):
     property: Optional[str] = None
     value_min: Optional[float] = None
     value_max: Optional[float] = None
-    value_on: Optional[str] = None
-    value_off: Optional[str] = None
+    value_on: Optional[str | bool | int] = None
+    value_off: Optional[str | bool | int] = None
     description: Optional[str] = None
     access: Optional[int] = None
     unit: Optional[str] = None
