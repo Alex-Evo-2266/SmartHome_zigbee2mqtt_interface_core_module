@@ -340,10 +340,13 @@ class ZigbeeService(BaseService):
     cordinators:Dict[str, ZigbeeServiceCoordinator] = {}
     @classmethod
     async def start(cls):
+        print("p5")
         topicks_str:str | None = __config__.get(ZIGBEE_CONFIG_KEY)
+        print("p6")
         if(not topicks_str):
             raise Exception("error read config")
         topicks = topicks_str.split(SEPARATOR_KEY)
+        print("p7", topicks)
         for topik in topicks:
             cls.cordinators[topik] = ZigbeeServiceCoordinator(topik)
         print(f"созданно {len(cls.cordinators.values)} координаторов")
