@@ -2,7 +2,7 @@ from app.ingternal.modules.classes.baseService import BaseService
 from app.ingternal.modules.arrays.serviceDataPoll import servicesDataPoll, ObservableDict
 from app.configuration.settings import SERVICE_POLL, SERVICE_DATA_POLL
 from ..settings import MQTT_SERVICE_PATH, ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, ZIGBEE_DEVICE_CLASS, ZIGBEE_CONFIG_KEY, MQTT_MESSAGES, SEPARATOR_KEY, ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH
-import json, logging
+import json, logging, asyncio
 from typing import Dict, Any
 from uuid import uuid4
 from app.ingternal.logs.logs import LogManager
@@ -63,6 +63,7 @@ class ZigbeeServiceCoordinator():
     def __init__(self, root):
         service:ObservableDict = servicesDataPoll.get(SERVICE_POLL)
         self.mqtt = service.get(MQTT_SERVICE_PATH)
+        print("l6", self.mqtt, service.get_all())
         self.root = root
         self.mqtt.subscribe(f"{self.root}/bridge/devices", self.on_device)
         self.mqtt.subscribe(f"{self.root}/bridge/info", self.on_info_bridge_pars)
@@ -73,13 +74,18 @@ class ZigbeeServiceCoordinator():
         self.mqtt.unsubscribe(f"{self.root}/bridge/info", self.on_info_bridge_pars)
         self.mqtt.unsubscribe(f"{self.root}/bridge/event", self.on_event)
 
-    # === Обработчик устройств ===
-    async def on_device(self, topic: str, payload: Any):
-        data = self._safe_parse(payload)
-        if not data:
-            print(f"[❌] Ошибка разбора JSON в {topic}")
-            return
-
+    @staticmethod
+    def _safe_parse(payload: Any):
+        if isinstance(payload, (bytes, str)):
+            try:
+                return json.loads(payload)
+            except json.JSONDecodeError:
+                return None
+        elif isinstance(payload, (list, dict)):
+            return payload
+        return None
+    
+    async def _device_parse(self, data):
         try:
             parsed = []
             for item in data:
@@ -113,16 +119,32 @@ class ZigbeeServiceCoordinator():
             services_data: ObservableDict = servicesDataPoll.get(SERVICE_DATA_POLL)
             zigbee_devices = services_data.get(ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH, {})
             zigbee_devices[self.root] = devices_dict
-            services_data.set(ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH, zigbee_devices)
+            await services_data.set_async(ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH, zigbee_devices)
 
         except ValidationError as e:
-            print(f"[❌] Ошибка валидации устройств:\n{e}")
+            print(f"[❌] Ошибка валидации cписка устройств:\n{e}")
+
+    # === Обработчик устройств ===
+    async def on_device(self, topic: str, payload: Any):
+        data = self._safe_parse(payload)
+        if not data:
+            print(f"[❌] Ошибка разбора JSON в {topic}")
+            return
+        try:
+            await self._device_parse(data)
+        except Exception as e:
+            logger.error(f"Error device parse: {e}")
+        
 
     def device_parse(self):
         services_data:ObservableDict = servicesDataPoll.get(SERVICE_DATA_POLL)
         topics = services_data.get(MQTT_MESSAGES)
         data = get_value_from_token(f"{self.root}/bridge/devices", topics)
-        print("e9999", data)
+        print("e9999", json.loads(data))
+        try:
+            asyncio.run(self._device_parse(json.loads(data)))
+        except Exception as e:
+            logger.error(f"Error device parse: {e}")
 
     async def on_info_bridge_pars(self, topic, message):
         data = json.loads(message)
@@ -349,7 +371,7 @@ class ZigbeeService(BaseService):
         print("p7", topicks)
         for topik in topicks:
             cls.cordinators[topik] = ZigbeeServiceCoordinator(topik)
-        print(f"созданно {len(cls.cordinators.values)} координаторов")
+        print(f"созданно {len(cls.cordinators.values())} координаторов")
         service:ObservableDict = servicesDataPoll.get(SERVICE_POLL)
         cls.mqtt = service.get(MQTT_SERVICE_PATH)
         cls.mqtt.subscribe("", device_set_value)
