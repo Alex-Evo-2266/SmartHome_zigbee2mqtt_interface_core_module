@@ -82,7 +82,7 @@ class ZigbeeServiceCoordinator():
 
         try:
             parsed = []
-            for item in parsed:
+            for item in data:
                 parsed.append(ZigbeeDevice.model_validate(item))
             self.devices = list(parsed)
             print(f"[✅] Найдено устройств: {len(self.devices)}")
