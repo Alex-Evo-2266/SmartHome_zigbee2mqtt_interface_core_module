@@ -84,18 +84,8 @@ class ZigbeeDevice(BaseModel):
     interview_completed: Optional[bool] = None
     software_build_id: Optional[str] = None
     date_code: Optional[str] = None
+    model_config = {"protected_namespaces": ()}
+
 
     class Config:
         extra = "ignore"
-
-
-# --- Wrapper для всего списка устройств -------------------------------------
-
-class ZigbeeDevicesList(BaseModel):
-    __root__: List[ZigbeeDevice]
-
-    def __iter__(self):
-        return iter(self.__root__)
-
-    def __getitem__(self, idx):
-        return self.__root__[idx]

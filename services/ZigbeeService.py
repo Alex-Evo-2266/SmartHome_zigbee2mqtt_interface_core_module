@@ -15,7 +15,7 @@ from app.ingternal.modules.arrays.serviceDataPoll import ObservableDict, service
 from app.configuration.settings import DEVICE_DATA_POLL
 from app.pkg import __config__
 from pydantic import ValidationError
-from ..schemas.devices import ZigbeeDevicesList
+from ..schemas.devices import ZigbeeDevice
 from ..utils import get_value_from_token
 
 # Настройка логирования
@@ -81,7 +81,9 @@ class ZigbeeServiceCoordinator():
             return
 
         try:
-            parsed = ZigbeeDevicesList.model_validate(data)
+            parsed = []
+            for item in parsed:
+                parsed.append(ZigbeeDevice.model_validate(item))
             self.devices = list(parsed)
             print(f"[✅] Найдено устройств: {len(self.devices)}")
 
