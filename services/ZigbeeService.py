@@ -95,7 +95,7 @@ class ZigbeeServiceCoordinator():
 
             # Преобразуем в dict
             devices_dict = {
-                dev.friendly_name: get_format({
+                dev.friendly_name: {
                     "ieee_address": dev.ieee_address,
                     "type": dev.type,
                     "model": dev.definition.model if dev.definition else None,
@@ -111,7 +111,7 @@ class ZigbeeServiceCoordinator():
                         }
                         for ep_id, ep in dev.endpoints.items()
                     },
-                })
+                }
                 for dev in self.devices
             }
 
@@ -119,6 +119,7 @@ class ZigbeeServiceCoordinator():
             services_data: ObservableDict = servicesDataPoll.get(SERVICE_DATA_POLL)
             zigbee_devices = services_data.get(ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH, {})
             zigbee_devices[self.root] = devices_dict
+            print("p6666", devices_dict)
             await services_data.set_async(ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH, zigbee_devices)
 
         except ValidationError as e:
