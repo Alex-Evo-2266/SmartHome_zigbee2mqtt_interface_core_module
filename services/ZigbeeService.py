@@ -1,7 +1,7 @@
 from app.ingternal.modules.classes.baseService import BaseService
 from app.ingternal.modules.arrays.serviceDataPoll import servicesDataPoll, ObservableDict
 from app.configuration.settings import SERVICE_POLL, SERVICE_DATA_POLL
-from ..settings import MQTT_SERVICE_PATH, ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, ZIGBEE_DEVICE_CLASS
+from ..settings import MQTT_SERVICE_PATH, ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, ZIGBEE_DEVICE_CLASS, ZIGBEE_CONFIG_KEY, MQTT_MESSAGES, SEPARATOR_KEY, ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH
 import json, logging
 from typing import Dict, Any
 from uuid import uuid4
@@ -13,6 +13,10 @@ from app.configuration.queue import __queue__
 
 from app.ingternal.modules.arrays.serviceDataPoll import ObservableDict, servicesDataPoll
 from app.configuration.settings import DEVICE_DATA_POLL
+from app.pkg import __config__
+from pydantic import ValidationError
+from ..schemas.devices import ZigbeeDevicesList
+from ..utils import get_value_from_token
 
 # Настройка логирования
 logger = logging.getLogger(__name__)
@@ -69,8 +73,54 @@ class ZigbeeServiceCoordinator():
         self.mqtt.unsubscribe(f"{self.root}/bridge/info", self.on_info_bridge_pars)
         self.mqtt.unsubscribe(f"{self.root}/bridge/event", self.on_event)
 
-    async def on_device(self, topic, message):
-        pass
+    # === Обработчик устройств ===
+    async def on_device(self, topic: str, payload: Any):
+        data = self._safe_parse(payload)
+        if not data:
+            print(f"[❌] Ошибка разбора JSON в {topic}")
+            return
+
+        try:
+            parsed = ZigbeeDevicesList.model_validate(data)
+            self.devices = list(parsed)
+            print(f"[✅] Найдено устройств: {len(self.devices)}")
+
+            # Преобразуем в dict
+            devices_dict = {
+                dev.friendly_name: get_format({
+                    "ieee_address": dev.ieee_address,
+                    "type": dev.type,
+                    "model": dev.definition.model if dev.definition else None,
+                    "vendor": dev.definition.vendor if dev.definition else None,
+                    "description": dev.definition.description if dev.definition else None,
+                    "power_source": dev.power_source,
+                    "interview_completed": dev.interview_completed,
+                    "supported": dev.supported,
+                    "endpoints": {
+                        ep_id: {
+                            "clusters": ep.clusters.model_dump() if ep.clusters else {},
+                            "bindings": ep.bindings,
+                        }
+                        for ep_id, ep in dev.endpoints.items()
+                    },
+                })
+                for dev in self.devices
+            }
+
+                        # Сохраняем в общие данные
+            services_data: ObservableDict = servicesDataPoll.get(SERVICE_DATA_POLL)
+            zigbee_devices = services_data.get(ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH, {})
+            zigbee_devices[self.root] = devices_dict
+            services_data.set(ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH, zigbee_devices)
+
+        except ValidationError as e:
+            print(f"[❌] Ошибка валидации устройств:\n{e}")
+
+    def device_parse(self):
+        services_data:ObservableDict = servicesDataPoll.get(SERVICE_DATA_POLL)
+        topics = services_data.get(MQTT_MESSAGES)
+        data = get_value_from_token(f"{self.root}/bridge/devices", topics)
+        print("e9999", data)
 
     async def on_info_bridge_pars(self, topic, message):
         data = json.loads(message)
@@ -270,6 +320,7 @@ class ZigbeeServiceCoordinator():
 
     def reloadDevice(self):
         print("p7777")
+        self.device_parse()
 
     def on_load_data(self, data):
         if isinstance(data, dict):
@@ -287,7 +338,13 @@ class ZigbeeService(BaseService):
     cordinators:Dict[str, ZigbeeServiceCoordinator] = {}
     @classmethod
     async def start(cls):
-        cls.cordinators['zigbee2mqtt'] = ZigbeeServiceCoordinator('zigbee2mqtt')
+        topicks_str:str | None = __config__.get(ZIGBEE_CONFIG_KEY)
+        if(not topicks_str):
+            raise Exception("error read config")
+        topicks = topicks_str.split(SEPARATOR_KEY)
+        for topik in topicks:
+            cls.cordinators[topik] = ZigbeeServiceCoordinator(topik)
+        print(f"созданно {len(cls.cordinators.values)} координаторов")
         service:ObservableDict = servicesDataPoll.get(SERVICE_POLL)
         cls.mqtt = service.get(MQTT_SERVICE_PATH)
         cls.mqtt.subscribe("", device_set_value)

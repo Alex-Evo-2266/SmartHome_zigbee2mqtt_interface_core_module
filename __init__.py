@@ -2,7 +2,7 @@ from app.ingternal.modules.classes.baseModules import BaseModule
 from app.ingternal.modules.arrays.serviceDataPoll import servicesDataPoll, ObservableDict
 from app.configuration.settings import SERVICE_POLL, SERVICE_DATA_POLL
 from app.pkg import itemConfig, ConfigItemType, __config__
-from .settings import ZIGBEE_SERVICE_PATH, ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH
+from .settings import ZIGBEE_SERVICE_PATH, ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH, ZIGBEE_CONFIG_KEY
 from .services.ZigbeeService import ZigbeeService
 from typing import Optional
 
@@ -23,7 +23,7 @@ class Module(BaseModule):
                 await zigbee_service.restart()
 
         __config__.register_config(
-            itemConfig(tag="zigbee2mqtt", key="zigbeeTopicks", type=ConfigItemType.MORE_TEXT, value="root"),
+            itemConfig(tag="zigbee2mqtt", key=ZIGBEE_CONFIG_KEY, type=ConfigItemType.MORE_TEXT, value="zigbee2mqtt"),
             restart
         )
 

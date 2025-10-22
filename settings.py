@@ -5,3 +5,7 @@ ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH = "ZigbeeServiceDataDevice"
 MQTT_MESSAGES = "MQTT_messages"
 
 ZIGBEE_DEVICE_CLASS = "ZigbeeDevice"
+
+ZIGBEE_CONFIG_KEY = "zigbeeTopicks"
+
+SEPARATOR_KEY = ","
