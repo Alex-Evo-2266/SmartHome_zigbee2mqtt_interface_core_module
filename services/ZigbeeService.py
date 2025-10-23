@@ -91,8 +91,8 @@ class ZigbeeServiceCoordinator():
                 parsed.append(ZigbeeDevice.model_validate(item))
             self.devices: List[ZigbeeDevice] = list(parsed)
             logger.info(f"[✅] Найдено устройств: {len(self.devices)}")
-            for item in self.devices:
-                logger.info(f"[✅] устройство: {item}")
+            # for item in self.devices:
+            #     logger.info(f"[✅] устройство: {item}")
 
             devices_dict = {
                 dev.friendly_name: dev.model_dump()
@@ -135,7 +135,7 @@ class ZigbeeServiceCoordinator():
         services_data: ObservableDict = servicesDataPoll.get(SERVICE_DATA_POLL)
         cordinators_info = services_data.get(ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, {})
         cordinators_info[self.root] = get_format(permit_join)
-        services_data.set(ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, cordinators_info)
+        await services_data.set_async(ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, cordinators_info)
 
     def set_permit_join(self, state: bool):
         self.mqtt.run_command(f"{self.root}/bridge/request/permit_join", json.dumps({"value": state, "time": 60}))
@@ -268,8 +268,8 @@ class ZigbeeServiceCoordinator():
                 name=data["name"]+str(data.get("endpoint", "")),
                 address=data["property"],
                 type=TypeDeviceField.BINARY,
-                low=data.get("value_off", None),
-                high=data.get("value_on", None),
+                low=str(data.get("value_off", None)),
+                high=str(data.get("value_on", None)),
                 read_only=is_read_only(data),
                 entity=None,
                 icon="",
