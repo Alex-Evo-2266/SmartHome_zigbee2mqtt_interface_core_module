@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field
 
 
@@ -59,7 +59,7 @@ class ZigbeeCluster(BaseModel):
 
 
 class ZigbeeEndpoint(BaseModel):
-    bindings: Optional[List[Dict[str, str]]] = Field(default_factory=list)
+    bindings: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
     clusters: Optional[ZigbeeCluster] = None
 
     class Config:
