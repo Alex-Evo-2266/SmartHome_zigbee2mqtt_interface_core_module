@@ -357,9 +357,12 @@ class ZigbeeService(BaseService):
 
     @classmethod
     async def stop(cls):
-        cls.mqtt.unsubscribe("", "zigbeeDevice")
-        for key in cls.cordinators:
-            cls.cordinators[key].stop()
+        service:ObservableDict = servicesDataPoll.get(SERVICE_POLL)
+        cls.mqtt = service.get(MQTT_SERVICE_PATH)
+        if(cls.mqtt):
+            cls.mqtt.unsubscribe("", "zigbeeDevice")
+            for key in cls.cordinators:
+                cls.cordinators[key].stop()
 
     @classmethod
     async def restart(cls):
