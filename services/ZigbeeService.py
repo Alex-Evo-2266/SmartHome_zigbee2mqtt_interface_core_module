@@ -350,11 +350,11 @@ class ZigbeeService(BaseService):
         logger.info(f"созданно {len(cls.cordinators.values())} координаторов")
         service:ObservableDict = servicesDataPoll.get(SERVICE_POLL)
         cls.mqtt = service.get(MQTT_SERVICE_PATH)
-        cls.mqtt.subscribe("", device_set_value)
+        cls.mqtt.subscribe("", "zigbeeDevice", device_set_value)
 
     @classmethod
     async def stop(cls):
-        cls.mqtt.unsubscribe("", device_set_value)
+        cls.mqtt.unsubscribe("", "zigbeeDevice")
         for key in cls.cordinators:
             cls.cordinators[key].stop()
 
