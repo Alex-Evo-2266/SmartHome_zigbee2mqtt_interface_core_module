@@ -69,9 +69,9 @@ class ZigbeeServiceCoordinator():
         self.mqtt.subscribe(f"{self.root}/bridge/event", "zigbee-key-event",self.on_event)
 
     def stop(self):
-        self.mqtt.unsubscribe(f"{self.root}/bridge/devices", "zigbee-key-devices", self.on_device)
-        self.mqtt.unsubscribe(f"{self.root}/bridge/info", "zigbee-key-info", self.on_info_bridge_pars)
-        self.mqtt.unsubscribe(f"{self.root}/bridge/event", "zigbee-key-event", self.on_event)
+        self.mqtt.unsubscribe(f"{self.root}/bridge/devices", "zigbee-key-devices")
+        self.mqtt.unsubscribe(f"{self.root}/bridge/info", "zigbee-key-info")
+        self.mqtt.unsubscribe(f"{self.root}/bridge/event", "zigbee-key-event")
 
     @staticmethod
     def _safe_parse(payload: Any):
