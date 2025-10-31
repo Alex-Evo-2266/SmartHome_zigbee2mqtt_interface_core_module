@@ -341,16 +341,19 @@ class ZigbeeService(BaseService):
     cordinators:Dict[str, ZigbeeServiceCoordinator] = {}
     @classmethod
     async def start(cls):
-        topicks_str:str | None = __config__.get(ZIGBEE_CONFIG_KEY)
-        if(not topicks_str):
-            raise Exception("error read config")
-        topicks = topicks_str.value.split(SEPARATOR_KEY)
-        for topik in topicks:
-            cls.cordinators[topik] = ZigbeeServiceCoordinator(topik)
-        logger.info(f"созданно {len(cls.cordinators.values())} координаторов")
-        service:ObservableDict = servicesDataPoll.get(SERVICE_POLL)
-        cls.mqtt = service.get(MQTT_SERVICE_PATH)
-        cls.mqtt.subscribe("", "zigbeeDevice", device_set_value)
+        try:
+            topicks_str:str | None = __config__.get(ZIGBEE_CONFIG_KEY)
+            if(not topicks_str):
+                raise Exception("error read config")
+            topicks = topicks_str.value.split(SEPARATOR_KEY)
+            for topik in topicks:
+                cls.cordinators[topik] = ZigbeeServiceCoordinator(topik)
+            logger.info(f"созданно {len(cls.cordinators.values())} координаторов")
+            service:ObservableDict = servicesDataPoll.get(SERVICE_POLL)
+            cls.mqtt = service.get(MQTT_SERVICE_PATH)
+            cls.mqtt.subscribe("", "zigbeeDevice", device_set_value)
+        except Exception as e:
+            print(f"error start ZigbeeService: {e}")
 
     @classmethod
     async def stop(cls):
