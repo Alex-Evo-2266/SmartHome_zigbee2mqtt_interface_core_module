@@ -64,14 +64,14 @@ class ZigbeeServiceCoordinator():
         service:ObservableDict = servicesDataPoll.get(SERVICE_POLL)
         self.mqtt = service.get(MQTT_SERVICE_PATH)
         self.root = root
-        self.mqtt.subscribe(f"{self.root}/bridge/devices", self.on_device)
-        self.mqtt.subscribe(f"{self.root}/bridge/info", self.on_info_bridge_pars)
-        self.mqtt.subscribe(f"{self.root}/bridge/event", self.on_event)
+        self.mqtt.subscribe(f"{self.root}/bridge/devices", "zigbee-key-devices", self.on_device)
+        self.mqtt.subscribe(f"{self.root}/bridge/info", "zigbee-key-info",self.on_info_bridge_pars)
+        self.mqtt.subscribe(f"{self.root}/bridge/event", "zigbee-key-event",self.on_event)
 
     def stop(self):
-        self.mqtt.unsubscribe(f"{self.root}/bridge/devices", self.on_device)
-        self.mqtt.unsubscribe(f"{self.root}/bridge/info", self.on_info_bridge_pars)
-        self.mqtt.unsubscribe(f"{self.root}/bridge/event", self.on_event)
+        self.mqtt.unsubscribe(f"{self.root}/bridge/devices", "zigbee-key-devices", self.on_device)
+        self.mqtt.unsubscribe(f"{self.root}/bridge/info", "zigbee-key-info", self.on_info_bridge_pars)
+        self.mqtt.unsubscribe(f"{self.root}/bridge/event", "zigbee-key-event", self.on_event)
 
     @staticmethod
     def _safe_parse(payload: Any):
