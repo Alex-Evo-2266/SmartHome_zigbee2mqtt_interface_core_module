@@ -351,7 +351,8 @@ class ZigbeeService(BaseService):
             logger.info(f"созданно {len(cls.cordinators.values())} координаторов")
             service:ObservableDict = servicesDataPoll.get(SERVICE_POLL)
             cls.mqtt = service.get(MQTT_SERVICE_PATH)
-            cls.mqtt.subscribe("", "zigbeeDevice", device_set_value)
+            print("test", cls.mqtt)
+            cls.mqtt.subscribe("", key="zigbeeDevice", callback=device_set_value)
         except Exception as e:
             print(f"error start ZigbeeService: {e}")
 
