@@ -1,10 +1,10 @@
 import logging, json
-from app.ingternal.device.classes.baseDevice import BaseDevice
-from app.ingternal.device.schemas.config import ConfigSchema, TypesDeviceEnum, ChangeField
-from app.ingternal.modules.arrays.serviceDataPoll import ObservableDict, servicesDataPoll
+from app.core.entities.device.baseDevice import BaseDevice
+from app.schemas.device.config import ConfigSchema, ChangeField
+from app.core.state.ObservableDict import ObservableDict, servicesDataPoll
 from typing import Optional
 from ..settings import MQTT_SERVICE_PATH
-from app.configuration.settings import SERVICE_POLL
+from app.bootstrap.const import SERVICE_POLL
 
 # Настройка логирования
 logger = logging.getLogger(__name__)

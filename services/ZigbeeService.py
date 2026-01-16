@@ -1,28 +1,24 @@
-from app.ingternal.modules.classes.baseService import BaseService
-from app.ingternal.modules.arrays.serviceDataPoll import servicesDataPoll, ObservableDict
-from app.configuration.settings import SERVICE_POLL, SERVICE_DATA_POLL
+from app.core.ports.module.baseService import BaseService
+from app.core.state.ObservableDict import servicesDataPoll, ObservableDict
+from app.bootstrap.const import SERVICE_POLL, SERVICE_DATA_POLL
+from app.core.state.get_store import get_container
 from ..settings import MQTT_SERVICE_PATH, ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, ZIGBEE_DEVICE_CLASS, ZIGBEE_CONFIG_KEY, MQTT_MESSAGES, SEPARATOR_KEY, ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH
 import json, logging, asyncio
 from typing import Dict, Any, List
 from uuid import uuid4
-from app.ingternal.logs.logs import LogManager
-from app.pkg.websoket.websocket import WebSocketMenager
-from app.ingternal.device.schemas.add_device import AddDeviceSchema, AddDeviceFieldSchema, ReceivedDataFormat, DeviceGetData, TypeDeviceField, FieldGetDataType
+from app.pkg.logger import MyLogger
+from app.pkg.websoket.manager import WebSocketMenager
+from app.schemas.device.add_device import AddDeviceSchema, AddDeviceFieldSchema, ReceivedDataFormat, DeviceGetData, TypeDeviceField, FieldGetDataType
 from ..device_field_set import device_set_value
-from app.configuration.queue import __queue__
+from app.pkg.runtime.queue import __queue__
 
-from app.ingternal.modules.arrays.serviceDataPoll import ObservableDict, servicesDataPoll
-from app.configuration.settings import DEVICE_DATA_POLL
-from app.pkg import __config__
+from app.pkg.config.core import __config__
 from pydantic import ValidationError
 from ..schemas.devices import ZigbeeDevice
 from ..utils import get_value_from_token
 
 # Настройка логирования
-logger = logging.getLogger(__name__)
-logsHandler = LogManager("zigbeeServiceLogs", level=logging.DEBUG)
-logger.addHandler(logsHandler.get_file_handler())
-logger.setLevel(logging.DEBUG)
+logger = MyLogger().get_logger(__name__)
 
 def get_format(permit_join):
     return {"permit_join": permit_join}
@@ -190,10 +186,11 @@ class ZigbeeServiceCoordinator():
                 if not ieee_address:
                     logger.warning("Отсутствует IEEE-адрес устройства")
                     return
-                devices:ObservableDict = servicesDataPoll.get(DEVICE_DATA_POLL)
-                devices_schemas = devices.get_all_data()
-                logger.debug(f"данные в хранилище данных устройства {devices_schemas}")
-                for device in devices_schemas:
+                device_store = get_container().device_store
+                all_snapshots = device_store.get_all_snapshots()
+                logger.debug(f"данные в хранилище данных устройства {all_snapshots}")
+                for snapshot in all_snapshots:
+                    device = snapshot.description
                     if device.address == f"{self.root}/{ieee_address}":
                         __queue__.add("edit_status", system_name=device.system_name, status=False)
                         logger.info(f"Успешно изменена модель устройства {device.system_name}")
@@ -224,10 +221,12 @@ class ZigbeeServiceCoordinator():
             
             logger.info(f"Начато интервью устройства {ieee_address} ({definition.get('model')})")
 
-            devices:ObservableDict = servicesDataPoll.get(DEVICE_DATA_POLL)
-            devices_schemas = devices.get_all_data()
-            logger.debug(f"данные в хранилище данных устройства {devices_schemas}")
-            for device in devices_schemas:
+            # devices:ObservableDict = servicesDataPoll.get(DEVICE_DATA_POLL)
+            device_store = get_container().device_store
+            all_snapshots = device_store.get_all_snapshots()
+            logger.debug(f"данные в хранилище данных устройства {all_snapshots}")
+            for snapshot in all_snapshots:
+                device = snapshot.description
                 if device.address == f"{self.root}/{ieee_address}":
                     __queue__.add("edit_status", system_name=device.system_name, status=True)
                     logger.info(f"Успешно изменена модель устройства {device.system_name}")

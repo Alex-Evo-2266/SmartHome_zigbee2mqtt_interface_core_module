@@ -1,7 +1,7 @@
-from app.ingternal.modules.classes.baseModules import BaseModule
-from app.ingternal.modules.arrays.serviceDataPoll import servicesDataPoll, ObservableDict
-from app.configuration.settings import SERVICE_POLL, SERVICE_DATA_POLL
-from app.pkg import itemConfig, ConfigItemType, __config__
+from app.core.ports.module.baseModules import BaseModule
+from app.core.state.ObservableDict import servicesDataPoll, ObservableDict
+from app.bootstrap.const import SERVICE_POLL, SERVICE_DATA_POLL
+from app.pkg.config.core import itemConfig, ConfigItemType, __config__
 from .settings import ZIGBEE_SERVICE_PATH, ZIGBEE_SERVICE_COORDINATOR_INFO_PATH, ZIGBEE_SERVICE_COORDINATOR_DEVICE_PATH, ZIGBEE_CONFIG_KEY
 from .services.ZigbeeService import ZigbeeService
 from typing import Optional
