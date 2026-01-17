@@ -160,14 +160,14 @@ async def device_set_value(topic: str, payload: str):
 
     event = DeviceEvent(
         system_name=system_name,
-        source="mqtt",
+        source="zigbee2mqtt",
         changes=changes
     )
 
     await dispatcher.emit(event)
 
     logger.debug(
-        "MQTT event emitted: device=%s topic=%s changes=%s",
+        "zigbee2mqtt mqtt event emitted: device=%s topic=%s changes=%s",
         system_name,
         topic,
         changes
